@@ -1,0 +1,79 @@
+name:  space-combat
+title:  Space Combat
+version: "0.9.16005"
+summary:  SpaceCombat is an open source PC game
+description: |
+  SpaceCombat is an open source PC game. It's a single player space simulation. Similar (commercial) games were TIE Fighter and Freespace. When you liked these games, you will love SpaceCombat. Notes: It's recommended to play the game with a joystick. When you run the game the first time, it will check the internet (souceforge.net) for the complete package (about 500MB). So, take a break, drink some coffee, speak to your mate... Once this download is finished, you can play the game. Later on, it will check once a week for updates. (You may prevent this by modifying the file "data/options.xml".)
+
+grade: stable
+icon: space-combat_icon.png
+
+base: core18
+confinement: strict
+
+architectures:
+  - build-on: amd64
+  - build-on: i386
+
+environment:
+  WINEDLLOVERRIDES: "$WINEDLLOVERRIDES;mscoree,mshtml="    # Prevent pop-ups about Wine Mono and Wine Gecko
+  SOMMELIER_STRICT: "1"                                    # Make Sommelier exit when unset variable is used. (useful to find bugs in sommelier)
+
+apps:
+  space-combat:
+    extensions: [ gnome-3-28 ]
+    command: bin/sommelier run-exe
+    environment:
+      RUN_EXE: "C:/Program Files (x86)/Space combat/SpaceCombat.exe"
+      INSTALL_EXE: "$SNAP/spacecombat_setup.exe"
+      #INSTALL_FLAGS: "/S"
+    plugs:
+      - home
+      - network
+      - network-bind
+      - removable-media
+      - cups
+  # The wine command can be used to run applications inside the wine
+  # environment that this snap uses.
+  #
+  # For example, users can configure the wine environment of this snap
+  # by running `myapp.wine winecfg`.
+  wine:
+    extensions: [ gnome-3-28 ]
+    command: bin/sommelier
+    plugs:
+      - home
+      - network
+      - network-bind
+      - removable-media
+      - cups
+ # The winetricks command can be used to run winetricks inside the wine
+  # environment that this snap uses.
+  winetricks:
+    extensions: [ gnome-3-28 ]
+    command: bin/sommelier winetricks
+    plugs:
+      - network
+
+parts:
+  installer:
+    plugin: dump
+    source: ./
+
+  # The sommelier script helps you snap Windows applications using Wine. It 
+  # initializes and configures Wine and installs the Windows application.
+  sommelier:
+    plugin: make
+    source: https://github.com/snapcrafters/sommelier-core.git
+
+# These plugs are used to connect the snap to the wine runtime.
+plugs:
+  wine-runtime:
+    interface: content
+    target: $SNAP/wine-runtime
+    default-provider: wine-platform-runtime
+  wine-5-stable:
+    interface: content
+    target: $SNAP/wine-platform
+    default-provider: wine-platform-5-stable
+
